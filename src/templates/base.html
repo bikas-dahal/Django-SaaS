@@ -1,4 +1,18 @@
-{% extends 'base.html' %}
 
-{% block content %}
-{% endblock content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base Template</title>
+    {% include "base/css.html" %}
+</head>
+<body>
+    {% include "nav/navbar.html" %}
+    {% block content %}
+    
+    {% endblock content %}
+
+    {% include "base/js.html" %}
+</body>
+</html>
