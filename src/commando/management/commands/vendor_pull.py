@@ -14,6 +14,7 @@ STATICFILES_VENDOR_DIR = getattr(
 VENDOR_STATICFILES = {
     'flowbite.min.css': 'https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css',
     'flowbite.min.js': 'https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js',
+    'flowbite.min.js.map': 'https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js',
 
 }
 
