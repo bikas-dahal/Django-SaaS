@@ -25,13 +25,21 @@ SECRET_KEY = 'django-insecure-#u7z40@@&$hl*-0mk6(a%co!q=)0r_ex&$h_35qttod*_ir)-e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '.railway.app'
+]
+
+if DEBUG:
+    ALLOWED_HOSTS += [
+    'localhost',
+    '127.0.0.1',        
+    ]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -59,6 +67,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR / 'templates',
+            BASE_DIR / 'visits' / 'templates'
         ],
         'APP_DIRS': True,
         'OPTIONS': {
