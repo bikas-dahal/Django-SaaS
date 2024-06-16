@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'visits',
+    'commando',
 ]
 
 MIDDLEWARE = [
@@ -105,7 +106,7 @@ DATABASES = {
 }
 
 CONN_MAX_AGE = config('CONN_MAX_AGE', cast=int, default=30)
-DATABASE_URL = config('DATABASE_URL', cast=str)
+DATABASE_URL = config('DATABASE_URL', default=None)
 
 if DATABASE_URL is not None:
     import dj_database_url
@@ -154,6 +155,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_BASE_DIRS = BASE_DIR / 'staticfiles'
+STATICFILES_BASE_DIRS.mkdir(exist_ok=True, parents=True)
+
+STATICFILES_VENDOR_DIRS = STATICFILES_BASE_DIRS / 'vendors'
+
+STATICFILES_DIRS = [
+    BASE_DIR /'static',
+    STATICFILES_BASE_DIRS
+]
+
+# local CDN 
+STATIC_ROOT = BASE_DIR / 'local_cdn'
+
+# if not DEBUG:
+#     STATIC_ROOT = BASE_DIR / 'prod_cdn'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
