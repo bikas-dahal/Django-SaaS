@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os 
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,7 +25,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#u7z40@@&$hl*-0mk6(a%co!q=)0r_ex&$h_35qttod*_ir)-e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str(os.environ.get('DJANGO_DEBUG')).lower() == 'true'
+
+print('DEBUG', DEBUG, type(DEBUG))
+
+  
 
 ALLOWED_HOSTS = [
     '.railway.app'
