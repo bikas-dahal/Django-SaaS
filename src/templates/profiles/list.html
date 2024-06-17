@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto">
+    <div class="flex justify-center">
+        <div class="w-1/2">
+            <h1 class="text-3xl font-bold text-center">Profile List</h1>
+        Users
+
+        {{ perms }}
+
+        {% if perms.auth %}
+
+           {% for instance in object_list %}
+            <li class="mt-4">
+                <a href='/profiles/{{instance.username}}'>{{instance.username}}</a>
+            </li>
+
+
+
+           {% endfor %}     
+           
+        {% endif %}    
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
