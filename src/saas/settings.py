@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'commando',
     'profiles',
     'subscription',
+    'customers',
 
     'allauth_ui',
     'allauth',
