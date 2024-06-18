@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import Group, Permission
 from django.db.models.signals import post_save
+import helpers.billing
 
 from django.conf import settings 
 
@@ -23,16 +24,37 @@ class Subscription(models.Model):
     name = models.CharField(max_length=120)
     groups = models.ManyToManyField(Group)
     active = models.BooleanField(default=True)
+    stripe_id = models.CharField(null=True, blank=True, max_length=50)
     permissions = models.ManyToManyField(Permission, 
                                         limit_choices_to={
                                             'content_type__app_label': 'subscription',
                                             'codename__in': [x[0] for x in SUBSCRIPTION_PERMISSIONS],
                                         })
+    order = models.IntegerField(default=-1, help_text='Ordering on Django pricing page')
+    featured = models.BooleanField(default=True, help_text='Featured on Djnago pricing page')
+
+    updated = models.DateTimeField( auto_now=True, auto_now_add=False)
+    timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
+
+    
+    def save(self, *args, **kwargs):
+        if not self.stripe_id:
+            self.stripe_id = helpers.billing.create_product(
+                name=self.name,
+                metadata = {
+                    'subscription_plan_id': self.id,
+                }, 
+                raw=False
+            )
+        super().save(*args, **kwargs)
+
+
 
     def __str__(self):
         return self.name
     
     class Meta:
+        ordering = ['order', 'featured', '-updated']
         permissions = SUBSCRIPTION_PERMISSIONS
 
 
@@ -73,3 +95,71 @@ def user_sub_post_save(sender, instance, *args, **kwargs):
 
 
 post_save.connect(user_sub_post_save, sender=UserSubscription)
+
+
+
+class SubscriptionPrice(models.Model):
+
+    class IntervalChoices(models.TextChoices):
+        MONTHLY ='month', 'Monthly'
+        YEARLY = 'year', 'Annually'
+
+    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL,null=True, blank=True)
+    interval = models.CharField(max_length=120, 
+                                default=IntervalChoices.MONTHLY,
+                                choices=IntervalChoices.choices
+                                )
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=99.99)
+    stripe_id = models.CharField(null=True, blank=True, max_length=50)
+    order = models.IntegerField(default=-1, help_text='Ordering on Django pricing page')
+    featured = models.BooleanField(default=True, help_text='Featured on Djnago pricing page')
+
+    updated = models.DateTimeField( auto_now=True, auto_now_add=False)
+    timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
+
+    class Meta:
+        ordering = ['subscription__order', 'order', 'featured', '-updated']
+
+    @property
+    def product_stripe_id(self):
+        if not self.subscription:
+            return None
+        return self.subscription.stripe_id
+    
+    @property
+    def stripe_currency(self):
+        return 'usd'
+    
+    @property
+    def stripe_price(self):
+        return int(self.price * 100)
+    
+    def save(self, *args, **kwargs):
+        if (not self.stripe_id and 
+            self.product_stripe_id is not None):
+            stripe_id = helpers.billing.create_price(
+                currency = self.stripe_currency,
+                unit_amount = self.stripe_price,
+                interval=self.interval,
+                product = self.product_stripe_id,
+                metadata = {
+                   'subscription_price_id': self.id,
+                },
+                raw=False
+            )
+            self.stripe_id = stripe_id
+
+        super().save(*args, **kwargs)
+        if self.featured and self.subscription:
+            qs = SubscriptionPrice.objects.filter(
+                subscription=self.subscription,
+                interval= self.interval
+            ).exclude(id=self.id)
+            qs.update(featured=False)
+            
+
+        def __str__(self):
+            return f'{self.subscription} - {self.interval} - {self.price}'
+        
+
+
