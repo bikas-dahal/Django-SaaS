@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}   
+Subscription Details
+{% endblock title %}
+
+{% block content %}
+
+Your Subscription {{ username}},
+
+<form action='' method='post'>
+    {% csrf_token %}
+    <button type='submit'>Refresh</button>
+</form>
+
+<a href='{{ subscription.get_cancel_url }}'>Cancel Membership</a>
+
+<p> Plan name: {{subscription.plan_name}} </p>
+
+<p> Subscription status: {{subscription.status}} </p>
+
+<p> Subscription Used: {{subscription.original_period_start|timesince}} </p>
+<p> Subscription start date: {{subscription.current_period_start}} </p>
+<p> Subscription end date: {{subscription.current_period_end|timeuntil}} </p>
+
+
+
+{% endblock content %}
