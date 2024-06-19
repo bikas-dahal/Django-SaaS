@@ -40,6 +40,7 @@ if all([ADMIN_USER_NAME, ADMIN_USER_EMAIL]):
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+BASE_URL = config('BASE_URL', default = None)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
