@@ -68,3 +68,61 @@ def create_price(
     stripe_id = response.id 
     return stripe_id
 
+def start_checkout_session(
+        success_url = '', 
+        raw=True,
+        price_stripe_id = '',
+        cancel_url = '',
+        customer_id = ''
+    ):
+
+    if not success_url.endswith('?session_id={CHECKOUT_SESSION_ID}'):
+        success_url += '?session_id={CHECKOUT_SESSION_ID}'
+
+    session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=[
+            {
+                'price': price_stripe_id,
+                'quantity': 1,
+            },
+        ],
+        mode='subscription',
+        success_url=success_url,
+        cancel_url= cancel_url,
+        customer=customer_id
+    )
+
+    if raw:
+        return session
+    return session.url
+
+def get_checkout_session(stripe_id, raw=True):
+
+    response = stripe.checkout.Session.retrieve(
+        stripe_id,
+    )
+
+
+    if raw:
+        return response
+    return response.url
+
+def get_subscription(stripe_id, raw=True):
+
+    response = stripe.Subscription.retrieve(
+        stripe_id,
+    )
+
+
+    if raw:
+        return response
+    return response.url
+
+def get_checkout_customer_plan(session_id):
+    checkout_r = get_checkout_session(session_id, raw=True)
+    customer_id = checkout_r.customer
+    sub_stripe_id = checkout_r.subscription
+    subscription_r = get_subscription(sub_stripe_id, raw=True)
+    sub_plan = subscription_r.plan
+    return customer_id, sub_plan.id

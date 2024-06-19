@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import Group, Permission
 from django.db.models.signals import post_save
 import helpers.billing
+from django.urls import reverse
 
 from django.conf import settings 
 
@@ -22,6 +23,7 @@ SUBSCRIPTION_PERMISSIONS = [
 
 class Subscription(models.Model):
     name = models.CharField(max_length=120)
+    subtitle = models.TextField(blank=True, null=True)
     groups = models.ManyToManyField(Group)
     active = models.BooleanField(default=True)
     stripe_id = models.CharField(null=True, blank=True, max_length=50)
@@ -32,9 +34,14 @@ class Subscription(models.Model):
                                         })
     order = models.IntegerField(default=-1, help_text='Ordering on Django pricing page')
     featured = models.BooleanField(default=True, help_text='Featured on Djnago pricing page')
-
+    features = models.TextField(help_text="To be displayed feature for subscription sep by new line", blank=True, null=True)
     updated = models.DateTimeField( auto_now=True, auto_now_add=False)
     timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
+
+    def get_features_as_list(self):
+        if not self.features:
+            return []
+        return [x.strip() for x in self.features.split('\n')]
 
     
     def save(self, *args, **kwargs):
@@ -56,6 +63,8 @@ class Subscription(models.Model):
     class Meta:
         ordering = ['order', 'featured', '-updated']
         permissions = SUBSCRIPTION_PERMISSIONS
+
+    
 
 
 
@@ -102,7 +111,7 @@ class SubscriptionPrice(models.Model):
 
     class IntervalChoices(models.TextChoices):
         MONTHLY ='month', 'Monthly'
-        YEARLY = 'year', 'Annually'
+        YEARLY = 'year', 'Yearly'
 
     subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL,null=True, blank=True)
     interval = models.CharField(max_length=120, 
@@ -120,11 +129,38 @@ class SubscriptionPrice(models.Model):
     class Meta:
         ordering = ['subscription__order', 'order', 'featured', '-updated']
 
+    def get_checkout_url(self):
+        return reverse(
+            'checkouts:sub_price_checkout',
+            kwargs={
+                'price_id': self.id
+            }
+        )
+
     @property
     def product_stripe_id(self):
         if not self.subscription:
             return None
         return self.subscription.stripe_id
+    
+    @property
+    def display_features_list(self):
+        if not self.subscription:
+            return None
+        return self.subscription.get_features_as_list()
+
+    
+    @property
+    def display_sub_name(self):
+        if not self.subscription:
+            return None
+        return self.subscription.name
+    
+    @property
+    def display_subtitle(self):
+        if not self.subscription:
+            return None
+        return self.subscription.subtitle
     
     @property
     def stripe_currency(self):
