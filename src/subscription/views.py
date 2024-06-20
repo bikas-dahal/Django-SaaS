@@ -4,26 +4,23 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 import helpers.billing
-
+from .import utils as subs_utils
 from django.urls import reverse
 
+
 @login_required
-def user_subscription_view(request):
-    user_sub_obj, created = UserSubscription.objects.get_or_create(user = request.user)
-    
-    if request.method == 'POST':
-        if user_sub_obj.stripe_id:
-            sub_data = helpers.billing.get_subscription(user_sub_obj.stripe_id, raw=False)
-            for k, v in sub_data.items():
-                setattr(user_sub_obj, k, v)
-            user_sub_obj.save()
-            messages.success(request, 'Your subscription has been updated.')
+def user_subscription_view(request,):
+    user_sub_obj, created = UserSubscription.objects.get_or_create(user=request.user)
+    if request.method == "POST":
+        print("refresh sub")
+        finished = subs_utils.refresh_active_users_subscriptions(user_ids=[request.user.id], active_only=False)
+        if finished:
+            messages.success(request, "Your plan details have been refreshed.")
+        else:
+            messages.error(request, "Your plan details have not been refreshed, please try again.")
         return redirect(user_sub_obj.get_absolute_url())
-        
-    return render(request, 'subscription/user_detail_view.html', {
-        'subscription': user_sub_obj,
-        'username': request.user
-    })
+    return render(request, 'subscription/user_detail_view.html', {"subscription": user_sub_obj})
+
 
 @login_required
 def user_subscription_cancel_view(request):
