@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      DJANGO_DEBUG: 0
+      # DJANGO_DEBUG: 0
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
