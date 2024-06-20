@@ -1,7 +1,53 @@
-from django.shortcuts import render
-from .models import SubscriptionPrice
+from django.shortcuts import render, redirect
+from .models import SubscriptionPrice, UserSubscription
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+import helpers.billing
 
 from django.urls import reverse
+
+@login_required
+def user_subscription_view(request):
+    user_sub_obj, created = UserSubscription.objects.get_or_create(user = request.user)
+    
+    if request.method == 'POST':
+        if user_sub_obj.stripe_id:
+            sub_data = helpers.billing.get_subscription(user_sub_obj.stripe_id, raw=False)
+            for k, v in sub_data.items():
+                setattr(user_sub_obj, k, v)
+            user_sub_obj.save()
+            messages.success(request, 'Your subscription has been updated.')
+        return redirect(user_sub_obj.get_absolute_url())
+        
+    return render(request, 'subscription/user_detail_view.html', {
+        'subscription': user_sub_obj,
+        'username': request.user
+    })
+
+@login_required
+def user_subscription_cancel_view(request):
+    user_sub_obj, created = UserSubscription.objects.get_or_create(user = request.user)
+    
+    if request.method == 'POST':
+        if user_sub_obj.stripe_id and user_sub_obj.status:
+            sub_data = helpers.billing.cancel_subscription(
+                user_sub_obj.stripe_id, 
+                raw=False,
+                feedback='other',
+                cancel_at_period_end=True,
+                reason='User wanted to end'
+            )
+            for k, v in sub_data.items():
+                setattr(user_sub_obj, k, v)
+            user_sub_obj.save()
+            messages.success(request, 'Your subscription has been canceled.')
+        return redirect(user_sub_obj.get_absolute_url())
+        
+    return render(request, 'subscription/user_cancel_view.html', {
+        'subscription': user_sub_obj,
+        'username': request.user
+    })
 
 def subscription_price_view(request, interval='year'):
     qs = SubscriptionPrice.objects.filter(featured=True)
