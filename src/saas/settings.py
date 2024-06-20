@@ -40,6 +40,7 @@ if all([ADMIN_USER_NAME, ADMIN_USER_EMAIL]):
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+BASE_URL = config('BASE_URL', default = None)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -78,6 +79,9 @@ INSTALLED_APPS = [
 
     'visits',
     'commando',
+    'profiles',
+    'subscription',
+    'customers',
 
     'allauth_ui',
     'allauth',
@@ -164,18 +168,18 @@ DATABASES = {
     }
 }
 
-CONN_MAX_AGE = config('CONN_MAX_AGE', cast=int, default=30)
-DATABASE_URL = config('DATABASE_URL', default=None)
+# CONN_MAX_AGE = config('CONN_MAX_AGE', cast=int, default=30)
+# DATABASE_URL = config('DATABASE_URL', default=None)
 
-if DATABASE_URL is not None:
-    import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.config(
-            default = DATABASE_URL,
-            conn_health_checks = True,
-            conn_max_age = CONN_MAX_AGE
-        )
-    }
+# if DATABASE_URL is not None:
+#     import dj_database_url
+#     DATABASES = {
+#         'default': dj_database_url.config(
+#             default = DATABASE_URL,
+#             conn_health_checks = True,
+#             conn_max_age = CONN_MAX_AGE
+#         )
+#     }
 
 
 
