@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DJANGO_DEBUG: 0
-      # DJANGO_SECRET_KEY: not-good
+      DJANGO_SECRET_KEY: 'DJANGO_SECRET_KEY'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
