@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DJANGO_DEBUG: 0
-      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      DJANGO_SECRET_KEY: 'django-insecure-#u7z40@@&$hl*-0mk6(a%co!q=)0r_ex&$h_35qttod*_ir)-e'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
